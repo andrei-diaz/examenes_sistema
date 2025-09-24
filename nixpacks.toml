@@ -1,8 +1,0 @@
-[phases.install]
-cmds = ['composer install --no-dev --optimize-autoloader --ignore-platform-reqs']
-
-[phases.build]
-cmds = ['php bin/cake.php cache clear_all || true']
-
-[start]
-cmd = 'php bin/cake.php server -H 0.0.0.0 -p $PORT'

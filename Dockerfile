@@ -1,25 +1,31 @@
-FROM php:8.2-apache
+FROM ubuntu:22.04
+
+# Set timezone to avoid interactive prompts
+ENV DEBIAN_FRONTEND=noninteractive
+ENV TZ=UTC
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
-    git \
+    apache2 \
+    php8.1 \
+    php8.1-apache2 \
+    php8.1-cli \
+    php8.1-common \
+    php8.1-curl \
+    php8.1-gd \
+    php8.1-intl \
+    php8.1-mbstring \
+    php8.1-mysql \
+    php8.1-pgsql \
+    php8.1-xml \
+    php8.1-zip \
     curl \
-    libpng-dev \
-    libonig-dev \
-    libxml2-dev \
-    zip \
+    git \
     unzip \
-    libicu-dev \
-    libpq-dev
+    && rm -rf /var/lib/apt/lists/*
 
-# Clear cache
-RUN apt-get clean && rm -rf /var/lib/apt/lists/*
-
-# Install PHP extensions
-RUN docker-php-ext-install pdo_pgsql pdo_mysql mbstring exif pcntl bcmath gd intl
-
-# Get latest Composer
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+# Install Composer
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
 # Set working directory
 WORKDIR /var/www/html
@@ -50,11 +56,11 @@ RUN echo '<VirtualHost *:80>\n\
     CustomLog ${APACHE_LOG_DIR}/access.log combined\n\
 </VirtualHost>' > /etc/apache2/sites-available/000-default.conf
 
-# Configure Apache
+# Enable Apache modules
 RUN a2enmod rewrite
 
 # Expose port
 EXPOSE 80
 
 # Start Apache
-CMD ["apache2-foreground"]
+CMD ["apache2ctl", "-D", "FOREGROUND"]

@@ -39,9 +39,16 @@ RUN mkdir -p /var/www/html/tmp /var/www/html/logs \
     && chmod -R 775 /var/www/html/tmp \
     && chmod -R 775 /var/www/html/logs
 
-# Configure Apache DocumentRoot to point to webroot
-RUN sed -i 's|/var/www/html|/var/www/html/webroot|g' /etc/apache2/sites-available/000-default.conf \
-    && sed -i 's|/var/www/|/var/www/html/webroot/|g' /etc/apache2/apache2.conf
+# Configure Apache for CakePHP
+RUN echo '<VirtualHost *:80>\n\
+    DocumentRoot /var/www/html/webroot\n\
+    <Directory /var/www/html/webroot>\n\
+        AllowOverride All\n\
+        Require all granted\n\
+    </Directory>\n\
+    ErrorLog ${APACHE_LOG_DIR}/error.log\n\
+    CustomLog ${APACHE_LOG_DIR}/access.log combined\n\
+</VirtualHost>' > /etc/apache2/sites-available/000-default.conf
 
 # Configure Apache
 RUN a2enmod rewrite

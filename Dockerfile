@@ -1,38 +1,41 @@
-FROM webdevops/php-apache:8.1
+# Use the built-in PHP development server instead of Apache
+FROM debian:bullseye-slim
 
-# Set environment variables
-ENV WEB_DOCUMENT_ROOT=/var/www/html/webroot
-ENV PHP_DISPLAY_ERRORS=off
-ENV PHP_MEMORY_LIMIT=512M
-
-# Install additional PHP extensions
+# Install PHP and required extensions
 RUN apt-get update && apt-get install -y \
-    libpq-dev \
-    && docker-php-ext-install pdo_pgsql \
+    php8.1-cli \
+    php8.1-pgsql \
+    php8.1-mbstring \
+    php8.1-xml \
+    php8.1-curl \
+    php8.1-zip \
+    php8.1-intl \
+    php8.1-gd \
+    curl \
+    unzip \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy application
-COPY . /var/www/html/
+# Install Composer
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
 # Set working directory
 WORKDIR /var/www/html
 
-# Install composer dependencies
+# Copy composer files first for better caching
+COPY composer.json composer.lock ./
+
+# Install dependencies
 RUN composer install --no-dev --optimize-autoloader --no-interaction
 
-# Set permissions
-RUN chown -R application:application /var/www/html \
-    && chmod -R 775 /var/www/html/tmp \
-    && chmod -R 775 /var/www/html/logs \
-    && mkdir -p /var/www/html/tmp /var/www/html/logs
+# Copy application code
+COPY . .
 
-# Create Apache configuration for CakePHP
-RUN echo '<Directory "/var/www/html/webroot">\n\
-    Options Indexes FollowSymLinks\n\
-    AllowOverride All\n\
-    Require all granted\n\
-</Directory>' > /opt/docker/etc/httpd/conf.d/cakephp.conf
+# Create directories and set permissions
+RUN mkdir -p tmp logs \
+    && chmod -R 775 tmp logs
 
-EXPOSE 80
+# Expose port
+EXPOSE $PORT
 
-CMD ["/entrypoint", "supervisord"]
+# Use PHP built-in server
+CMD php bin/cake.php server -H 0.0.0.0 -p $PORT

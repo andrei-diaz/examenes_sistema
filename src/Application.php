@@ -40,7 +40,11 @@ class Application extends BaseApplication implements AuthenticationServiceProvid
 
         // Cargar DebugKit solo en desarrollo
         if (Configure::read('debug') && PHP_SAPI !== 'cli') {
-            $this->addPlugin('DebugKit');
+            try {
+                $this->addPlugin('DebugKit');
+            } catch (\Cake\Core\Exception\MissingPluginException $e) {
+                // DebugKit no está instalado, continuar sin él
+            }
         }
     }
 

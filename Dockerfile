@@ -1,8 +1,11 @@
 # Use a more reliable base image
 FROM registry.access.redhat.com/ubi8/ubi-minimal:latest
 
-# Install PHP and required packages
-RUN microdnf install -y php php-cli php-pdo php-pgsql php-mbstring php-xml php-curl php-zip php-intl php-gd php-json curl tar && \
+# Set timezone environment variable
+ENV TZ=UTC
+
+# Install PHP and required packages including timezone data
+RUN microdnf install -y php php-cli php-pdo php-pgsql php-mbstring php-xml php-curl php-zip php-intl php-gd php-json curl tar tzdata && \
     microdnf clean all
 
 # Install Composer

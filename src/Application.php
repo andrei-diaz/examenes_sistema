@@ -75,7 +75,15 @@ class Application extends BaseApplication implements AuthenticationServiceProvid
             'queryParam' => 'redirect',
         ]);
 
-        // Cargar authenticators con sintaxis moderna
+        // Cargar identificadores
+        $authenticationService->loadIdentifier('Authentication.Password', [
+            'fields' => [
+                'username' => 'email',
+                'password' => 'password',
+            ]
+        ]);
+
+        // Cargar authenticators
         $authenticationService->loadAuthenticator('Authentication.Session');
         $authenticationService->loadAuthenticator('Authentication.Form', [
             'fields' => [
@@ -83,13 +91,6 @@ class Application extends BaseApplication implements AuthenticationServiceProvid
                 'password' => 'password',
             ],
             'loginUrl' => '/users/login',
-            'identifier' => [
-                'className' => 'Authentication.Password',
-                'fields' => [
-                    'username' => 'email',
-                    'password' => 'password',
-                ]
-            ]
         ]);
 
         return $authenticationService;

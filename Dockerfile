@@ -1,15 +1,32 @@
-# Use a more reliable base image
-FROM registry.access.redhat.com/ubi8/ubi-minimal:latest
+# Use Ubuntu base image for better timezone support
+FROM ubuntu:22.04
 
 # Set timezone environment variable
 ENV TZ=UTC
+ENV DEBIAN_FRONTEND=noninteractive
 
 # Install PHP and required packages including timezone data
-RUN microdnf install -y php php-cli php-pdo php-pgsql php-mbstring php-xml php-curl php-zip php-intl php-gd php-json curl tar tzdata && \
-    microdnf clean all
+RUN apt-get update && \
+    apt-get install -y \
+    php8.1 \
+    php8.1-cli \
+    php8.1-pdo \
+    php8.1-pgsql \
+    php8.1-mbstring \
+    php8.1-xml \
+    php8.1-curl \
+    php8.1-zip \
+    php8.1-intl \
+    php8.1-gd \
+    curl \
+    tar \
+    tzdata && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-# Configure timezone explicitly for PHP BEFORE using Composer
-RUN echo "date.timezone = UTC" >> /etc/php.ini
+# Configure timezone explicitly
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+RUN echo "date.timezone = UTC" >> /etc/php/8.1/cli/php.ini
 
 # Install Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
@@ -33,4 +50,4 @@ RUN mkdir -p tmp logs && chmod -R 775 tmp logs
 EXPOSE $PORT
 
 # Use PHP built-in server
-CMD php bin/cake.php server -H 0.0.0.0 -p $PORT
+CMD php8.1 bin/cake.php server -H 0.0.0.0 -p $PORT

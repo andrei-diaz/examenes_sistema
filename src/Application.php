@@ -37,6 +37,11 @@ class Application extends BaseApplication implements AuthenticationServiceProvid
 
         // Cargar plugin de Authentication
         $this->addPlugin('Authentication');
+
+        // Cargar DebugKit solo en desarrollo
+        if (Configure::read('debug') && PHP_SAPI !== 'cli') {
+            $this->addPlugin('DebugKit');
+        }
     }
 
     public function middleware(MiddlewareQueue $middlewareQueue): MiddlewareQueue

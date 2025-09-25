@@ -5,7 +5,7 @@ FROM ubuntu:22.04
 ENV TZ=UTC
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Install PHP and required packages including timezone data
+# Install PHP and required packages including timezone data and git
 RUN apt-get update && \
     apt-get install -y \
     php8.1 \
@@ -20,6 +20,8 @@ RUN apt-get update && \
     php8.1-gd \
     curl \
     tar \
+    git \
+    unzip \
     tzdata && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
@@ -38,6 +40,7 @@ WORKDIR /app
 COPY composer.json composer.lock ./
 
 # Install dependencies
+ENV COMPOSER_ALLOW_SUPERUSER=1
 RUN composer install --no-dev --optimize-autoloader --no-interaction --ignore-platform-reqs
 
 # Copy application code

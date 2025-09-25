@@ -8,6 +8,9 @@ ENV TZ=UTC
 RUN microdnf install -y php php-cli php-pdo php-pgsql php-mbstring php-xml php-curl php-zip php-intl php-gd php-json curl tar tzdata && \
     microdnf clean all
 
+# Configure timezone explicitly for PHP
+RUN echo "date.timezone = UTC" >> /etc/php.ini
+
 # Install Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
